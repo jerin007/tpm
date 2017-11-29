@@ -1,0 +1,75 @@
+.navbar {
+  border-radius: 0px;
+  background-color: #001938;
+}
+
+.navbar-brand-right{
+  float: right;
+  position: absolute;
+  right: 0;
+   top: 2px;
+}
+
+.container{
+  padding-top: 10px;
+}
+
+.list-group-item{
+  margin-bottom: 5px;
+  border-radius: 0px;
+  background-color: gainsboro;
+}
+
+
+/*For Index.html Page* Created By Jerin Jahan (29.11.2017)/
+ */
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+.text-center{
+  text-align: center;
+}
+
+.class-fluidman{
+  background-color: rgb(51,204,51);
+}
+
+.class-maschbed{
+  background-color: rgb(0,112,192);
+  color:#fff;
+}
+
+.class-einrichter{
+  background-color: rgb(112,48,160);
+  color:#fff;
+}
+.class-ins{
+  background-color: #4aa4f7;
+  color:#fff;
+}
+.class-insel{
+  background-color: #794044;
+  color:#fff;
+}
+.class-schichtfu{
+  background-color: rgb(255,192,0);
+}
+.table tr td{
+  border-color: black;
+}
+.table th{
+  border-color: black;
+  padding: .25rem;
+}
+
+.m-table:nth-child(even){
+  background: gainsboro;
+}
+.ui-select-placeholder, .ui-select-match-text {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 40px;
+}
+

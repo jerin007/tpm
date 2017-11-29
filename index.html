@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <script src="public/comps/jquery/jquery.min.js"></script>
+    <script src="public/comps/tether.min.js"></script>
+    <script src="public/comps/bs_4/js/bootstrap.min.js"></script>
+    <script src="public/comps/angular/angular.min.js"></script>
+    <script src="public/comps/angular-sanitize.js"></script>
+    <link rel="stylesheet" href="public/comps/bs_4/css/bootstrap.min.css" type="text/css">
+    <script src="public/comps/toast/toastr.js"></script>
+    <script src="public/comps/spin.min.js"></script>
+    <link rel="stylesheet" href="public/comps/toast/toastr.css">
+    <link rel="stylesheet" href="public/comps/fa/css/font-awesome.min.css">
+    <script src="public/comps/ui-select/angular_select.js"></script>
+    <link rel="stylesheet" href="public/comps/ui-select/select.css">
+    <script src="public/comps/jquery.smoothState.js"></script>
+    <link rel="stylesheet" href="public/css/select2.css">
+    <link rel="stylesheet" href="public/css/animate.min.css">
+    <link rel="stylesheet" href="public/css/style.css">
+    <title>TPM Home</title>
+    <script type="text/javascript">
+        var app = angular.module('myApp', ['ngSanitize','ui.select']);
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            e.target
+            e.relatedTarget
+        });
+        app.controller('myCtrl',function ($scope, $http,$filter) {
+            $scope.group_list=[];
+            $scope.masch_list=[];
+
+            $http.get("php/get/get_masch_group_list.php")
+                .success(function (response) {
+                    //console.log('group list ='+response);
+                    $scope.group_list=response;
+                });
+
+            $http.get("php/get/get_masch_list.php")
+                .success(function (response) {
+                    $scope.masch_list=response;
+                });
+
+
+            console.log('group list ='+JSON.stringify($scope.group_list));
+            console.log('machine list ='+JSON.stringify($scope.masch_list));
+
+            $http.get("php/get/get_process_list.php")
+                .success(function (response) {
+                    $scope.process_list=response;
+                });
+            $scope.multi = {};
+            $scope.multi.processselect = [];
+
+            $scope.open_pro_ins_modal = function(){
+                $scope.ins_data = {};
+                $scope.ins_data.pro_name = "";
+                $scope.ins_data.sel_user_type= null;
+                $scope.ins_data.sel_input_type= null;
+                $scope.ins_data.sel_occur_type= null;
+
+                $scope.occur = {};
+                $scope.occur.daily = {};
+                $scope.occur.daily.hour = null;
+                $scope.occur.daily.min = null;
+
+                $scope.occur.weekly = {};
+                $scope.occur.weekly.day = null;
+                $scope.occur.weekly.hour = null;
+                $scope.occur.weekly.min = null;
+
+                $scope.occur.monthly = {};
+                $scope.occur.monthly.week = null;
+                $scope.occur.monthly.day = null;
+                $scope.occur.monthly.hour = null;
+                $scope.occur.monthly.min = null;
+
+                $scope.occur.shift = {};
+                $scope.occur.shift.hour_1 = null;
+                $scope.occur.shift.min_1 = null;
+                $scope.occur.shift.hour_2 = null;
+                $scope.occur.shift.min_2 = null
+                $scope.occur.shift.hour_3 = null;
+                $scope.occur.shift.min_3 = null;
+
+                $scope.occur.list = {};
+                $scope.occur.list.hour = null;
+                $scope.occur.list.min = null;
+
+                $scope.occur.time_define = {};
+                $scope.occur.time_define.hour_1_1 = null;
+                $scope.occur.time_define.hour_1_2 = null;
+                $scope.occur.time_define.hour_2_1 = null;
+                $scope.occur.time_define.hour_2_2 = null;
+                $scope.occur.time_define.hour_3_1 = null;
+                $scope.occur.time_define.hour_3_2 = null;
+
+                $scope.time_list_ins = [];
+
+                $("#mdl_new_prc").modal("show");
+
+            };
+
+
+
+            $scope.insert_new_process = function(){
+
+                //console.log( $scope.ins_data.pro_name +""+$scope.ins_data.sel_user_type+" "+$scope.ins_data.sel_input_type+" "+$scope.ins_data.sel_occur_type);
+                if($scope.ins_data.pro_name != "" && $scope.ins_data.sel_user_type != null && $scope.ins_data.sel_input_type != null && $scope.ins_data.sel_occur_type!= null){
+
+                    var time_occur = $scope.preocess_time_occur();
+
+                    if(time_occur != false){
+
+                        var raw_data = "name="+$scope.ins_data.pro_name+"&input_type="+$scope.ins_data.sel_input_type+"&responsible="+$scope.ins_data.sel_user_type+"&task_occur="+$scope.ins_data.sel_occur_type+"&task_occur_time="+time_occur;
+                        $.ajax({ //Process the form using $.ajax()
+                            type: 'POST', //Method type
+                            url: 'php/post/insert_process_tpm.php', //Your form processing file URL
+                            data: raw_data, //Forms name
+                            success: function (data) {
+                                if(data == 1){
+
+                                    $("#mdl_new_prc").modal("hide");
+                                    $http.get("php/get/get_process_list.php")
+                                        .success(function (response) {
+                                            $scope.process_list=response;
+
+                                        });
+                                    show_success_msg("Succesfully Inserted");
+                                }else{
+
+                                    show_err_msg("Process Not Inserted");
+
+                                }
+                                //console.log(data);
+                            }
+                        });
+                    }
+                }else{
+                    show_err_msg_short("Please Fill All Values");
+                }
+
+            };
+
+            $scope.edit_task = function(task){
+                //console.log(task);
+
+                $scope.sel_edit_pro = task;
+
+                $scope.edit_data = {};
+                $scope.edit_data.pro_name = task.name;
+                $scope.edit_data.sel_user_type= task.responsible;
+                $scope.edit_data.sel_input_type= task.input_type;
+                $scope.edit_data.sel_occur_type= task.task_occur;
+
+                $scope.occur_edit = {};
+                $scope.occur_edit.daily = {};
+                $scope.occur_edit.daily.hour = null;
+
+                $scope.occur_edit.weekly = {};
+                $scope.occur_edit.weekly.day = null;
+                $scope.occur_edit.weekly.hour = null;
+
+                $scope.occur_edit.monthly = {};
+                $scope.occur_edit.monthly.week = null;
+                $scope.occur_edit.monthly.day = null;
+                $scope.occur_edit.monthly.hour = null;
+
+                $scope.occur_edit.shift = {};
+                $scope.occur_edit.shift.hour_1 = null;
+                $scope.occur_edit.shift.hour_2 = null;
+                $scope.occur_edit.shift.hour_3 = null;
+
+                $scope.occur_edit.time_define = {};
+                $scope.occur_edit.time_define.hour_1_1 = null;
+                $scope.occur_edit.time_define.hour_1_2 = null;
+                $scope.occur_edit.time_define.hour_2_1 = null;
+                $scope.occur_edit.time_define.hour_2_2 = null;
+                $scope.occur_edit.time_define.hour_3_1 = null;
+                $scope.occur_edit.time_define.hour_3_2 = null;
+
+                var main_spl = task.task_occur_time.split(",");
+
+                switch($scope.edit_data.sel_occur_type){
+                    case "0":
+                        var splited = main_spl[0].split(":");
+                        $scope.occur_edit.daily.hour = splited[0];
+                        break;
+                    case "1":
+                        $scope.occur_edit.weekly.day = main_spl[0];
+                        var splited = main_spl[1].split(":");
+                        $scope.occur_edit.weekly.hour = splited[0];
+                        break;
+                    case "2":
+                        $scope.occur_edit.monthly.week = main_spl[0];
+                        $scope.occur_edit.monthly.day = main_spl[1];
+                        var splited = main_spl[2].split(":");
+                        $scope.occur_edit.monthly.hour = splited[0];
+                        break;
+                    case "3":
+
+                        var splited_1 = main_spl[0].split(":");
+                        $scope.occur_edit.shift.hour_1 = splited_1[0];
+
+                        var splited_2 = main_spl[1].split(":");
+                        $scope.occur_edit.shift.hour_2 = splited_2[0];
+
+                        var splited_3 = main_spl[2].split(":");
+                        $scope.occur_edit.shift.hour_3 = splited_3[0];
+                        break;
+                    case "4":
+
+                        var splited_1 = main_spl[0].split(":");
+                        $scope.occur_edit.time_define.hour_1_1 = splited_1[0];
+
+                        var splited_2 = main_spl[1].split(":");
+                        $scope.occur_edit.time_define.hour_1_2 = splited_2[0];
+
+                        var splited_3 = main_spl[2].split(":");
+                        $scope.occur_edit.time_define.hour_2_1 = splited_3[0];
+
+                        var splited_4 = main_spl[3].split(":");
+                        $scope.occur_edit.time_define.hour_2_2 = splited_4[0];
+
+                        var splited_5 = main_spl[4].split(":");
+                        $scope.occur_edit.time_define.hour_3_1 = splited_5[0];
+
+                        var splited_6 = main_spl[5].split(":");
+                        $scope.occur_edit.time_define.hour_3_2 = splited_6[0];
+
+                        break;
+                }
+
+                $("#mdl_edit_prc").modal('show');
+            }
+
+            $scope.update_process = function(){
+
+               // console.log($scope.sel_edit_pro);
+
+               // console.log( $scope.edit_data.pro_name +""+$scope.edit_data.sel_user_type+" "+$scope.edit_data.sel_input_type+" "+$scope.edit_data.sel_occur_type);
+                if($scope.edit_data.pro_name != "" && $scope.edit_data.sel_user_type != null && $scope.edit_data.sel_input_type != null && $scope.edit_data.sel_occur_type!= null){
+
+                    var time_occur = $scope.preocess_time_occur_edit();
+
+                    if(time_occur != false){
+
+                        var raw_data = "name="+$scope.edit_data.pro_name+"&input_type="+$scope.edit_data.sel_input_type+"&responsible="+$scope.edit_data.sel_user_type+"&task_occur_time="+time_occur+"&uid="+$scope.sel_edit_pro.uid;
+                       // console.log(raw_data);
+                        $.ajax({ //Process the form using $.ajax()
+                            type: 'POST', //Method type
+                            url: 'php/put/update_process_data.php', //Your form processing file URL
+                            data: raw_data, //Forms name
+                            success: function (data) {
+                                if(data == 1){
+
+                                    $("#mdl_edit_prc").modal("hide");
+                                    $http.get("php/get/get_process_list.php")
+                                        .success(function (response) {
+                                            $scope.process_list=response;
+
+                                        });
+                                    show_success_msg("Succesfully Updated");
+                                }else{
+
+                                    show_err_msg("Process Not Inserted");
+
+                                }
+                               // console.log(data);
+                            }
+                        });
+                    }
+                }else{
+                    show_err_msg_short("Please Fill All Values");
+                }
+
+            };
+
+
+            $scope.save_masch_selection = function(){
+                var raw_data = "values=";
+                for (var i = 0; i < $scope.process_list.length; i++) {
+                    raw_data+= "("+$scope.process_list[i].uid+","+$scope.process_list[i].masch_mask+"),";
+                }
+
+                var raw_data = raw_data.slice(0, -1);
+                $.ajax({ //Process the form using $.ajax()
+                    type: 'POST', //Method type
+                    url: 'php/put/update_process_masch.php', //Your form processing file URL
+                    data: raw_data, //Forms name
+                    success: function (data) {
+                        if(data == 1){
+                            $http.get("php/get/get_process_list.php")
+                                .success(function (response) {
+                                    $scope.process_list=response;
+
+                                });
+                            show_success_msg("Succesfully Updated");
+                        }else{
+
+                            show_err_msg("Process Not Inserted");
+                        }
+                        //console.log(data);
+                    }
+                });
+            };
+
+            //DAILY STRUCTURE 			10:00
+            //WEEKLY STRUCTURE 			monday,10:00
+            //MONTHLY STRUCTURE 		2,monday,10:00
+            //SHIFT STRUCTURE 			06:00,12:00,18:00
+            //TIME DEFINE STRUCTURE 	06:00,08:00,12:00,....
+
+            $scope.preocess_time_occur = function(){
+                //console.log($scope.ins_data.sel_occur_type);
+                switch($scope.ins_data.sel_occur_type){
+                    case "0":
+                        if($scope.occur.daily.hour != null){
+                            return $scope.occur.daily.hour+":00";
+                        }else{
+                            return false;
+                        }
+                        break;
+                    case "1":
+                        if($scope.occur.weekly.day != null && $scope.occur.weekly.hour != null){
+                            return $scope.occur.weekly.day +","+ $scope.occur.weekly.hour +":00";
+                        }else{
+                            return false;
+                        }
+                        break;
+                    case "2":
+                        if($scope.occur.monthly.week != null && $scope.occur.monthly.day != null && $scope.occur.monthly.hour != null){
+                            return $scope.occur.monthly.week+","+$scope.occur.monthly.day +","+ $scope.occur.monthly.hour +":00";
+                        }else{
+                            return false;
+                        }
+                    case "3":
+                        if($scope.occur.shift.hour_1 != null && $scope.occur.shift.hour_2 != null && $scope.occur.shift.hour_3 != null){
+                            return $scope.occur.shift.hour_1+":00,"+ $scope.occur.shift.hour_2 +":00,"+ $scope.occur.shift.hour_3 +":00";
+                        }else{
+                            return false;
+                        }
+                    case "4":
+                        if($scope.occur.time_define.hour_1_1 != null && $scope.occur.time_define.hour_1_2 != null && $scope.occur.time_define.hour_2_1 != null && $scope.occur.time_define.hour_2_2 != null && $scope.occur.time_define.hour_3_1 != null && $scope.occur.time_define.hour_3_2 != null){
+                            return $scope.occur.time_define.hour_1_1 +":00,"+ $scope.occur.time_define.hour_1_2 +":00,"+$scope.occur.time_define.hour_2_1 +":00,"+$scope.occur.time_define.hour_2_2 +":00,"+$scope.occur.time_define.hour_3_1 +":00,"+$scope.occur.time_define.hour_3_2 +":00";
+                        }else{
+                            return false;
+                        }
+
+                    /*return $scope.time_list_ins.join(",");
+                    break;*/
+                    default :
+                        return false;
+                }
+
+            };
+
+            $scope.preocess_time_occur_edit = function(){
+                //console.log($scope.edit_data.sel_occur_type);
+                switch($scope.edit_data.sel_occur_type){
+                    case "0":
+                        if($scope.occur_edit.daily.hour != null){
+                            return $scope.occur_edit.daily.hour+":00";
+                        }else{
+                            return false;
+                        }
+                        break;
+                    case "1":
+                        if($scope.occur_edit.weekly.day != null && $scope.occur_edit.weekly.hour != null){
+                            return $scope.occur_edit.weekly.day +","+ $scope.occur_edit.weekly.hour +":00";
+                        }else{
+                            return false;
+                        }
+                        break;
+                    case "2":
+                        if($scope.occur_edit.monthly.week != null && $scope.occur_edit.monthly.day != null && $scope.occur_edit.monthly.hour != null){
+                            return $scope.occur_edit.monthly.week+","+$scope.occur_edit.monthly.day +","+ $scope.occur_edit.monthly.hour +":00";
+                        }else{
+                            return false;
+                        }
+                    case "3":
+                        if($scope.occur_edit.shift.hour_1 != null && $scope.occur_edit.shift.hour_2 != null && $scope.occur_edit.shift.hour_3 != null){
+                            return $scope.occur_edit.shift.hour_1+":00,"+ $scope.occur_edit.shift.hour_2 +":00,"+ $scope.occur_edit.shift.hour_3 +":00";
+                        }else{
+                            return false;
+                        }
+                    case "4":
+                        if($scope.occur_edit.time_define.hour_1_1 != null && $scope.occur_edit.time_define.hour_1_2 != null && $scope.occur_edit.time_define.hour_2_1 != null && $scope.occur_edit.time_define.hour_2_2 != null && $scope.occur_edit.time_define.hour_3_1 != null && $scope.occur_edit.time_define.hour_3_2 != null){
+                            return $scope.occur_edit.time_define.hour_1_1 +":00,"+ $scope.occur_edit.time_define.hour_1_2 +":00,"+$scope.occur_edit.time_define.hour_2_1 +":00,"+$scope.occur_edit.time_define.hour_2_2 +":00,"+$scope.occur_edit.time_define.hour_3_1 +":00,"+$scope.occur_edit.time_define.hour_3_2 +":00";
+                        }else{
+                            return false;
+                        }
+
+                    /*return $scope.time_list_ins.join(",");
+                    break;*/
+                    default :
+                        return false;
+                }
+
+            };
+
+            $scope.add_time_in_list = function(){
+                if($scope.occur.list.hour != null && $scope.occur.list.min != null){
+                    $scope.time_list_ins.push($scope.occur.list.hour+":"+$scope.occur.list.min);
+                    $scope.occur.list.hour = null;
+                    $scope.occur.list.min = null;
+                }
+            };
+
+            $scope.remove_time_list = function(index){
+                $scope.time_list_ins.splice(index, 1);
+            };
+
+            $scope.get_masch_status = function(value,pos){
+                //console.log(decbin(value,13))
+                var bin_val = decbin(value,13);
+                var splited = bin_val.split("");
+                var actual_pos = (splited.length -1) - pos;
+                if(splited[actual_pos] == 1){
+                    return "fa fa-check bg-default";
+                }else{
+                    return "";
+                }
+                return "";
+            };
+
+            $scope.set_masch_status = function(id,index,pos){
+
+               // console.log(index);
+
+                var value = $scope.process_list[index].masch_mask;
+
+                var bin_val = decbin(value,13);
+                var splited = bin_val.split("");
+                var actual_pos = (splited.length -1) - pos;
+                if(splited[actual_pos] == 1){
+                    splited[actual_pos] = 0;
+                }else{
+                    splited[actual_pos] = 1;
+                }
+
+                var binary = splited.join("");
+
+                var digit = parseInt(binary, 2);
+
+                $scope.process_list[index].masch_mask = digit;
+                //$scope.$apply();
+            };
+
+            $scope.get_user_color = function(user){
+                switch(user){
+                    case "Fluidmanager":
+                        return "class-fluidman";
+                    case "Maschinenbediener":
+                        return "class-maschbed";
+                    case "Einrichter oder Instandhaltung":
+                        return "class-einrichter";
+                    case "Einrichter":
+                        return "class-einrichter";
+                    case "Instandhaltung":
+                        return "class-ins";
+                    case "Instandhalter el.":
+                        return "class-insel";
+                    case "Schichtführer":
+                        return "class-schichtfu";
+                    default:
+                        return "Error";
+                }
+            };
+
+            $scope.search_for = function(){
+                try {
+                    for (var i=0;i< $scope.process_list.length;i++){
+                        $scope.process_list[i]["text_filter"] = $scope.process_list[i]['name'] + $scope.process_list[i]['responsible'];
+                    }
+                } catch (error) {
+
+                }
+                return $scope.process_list;
+            }
+        });
+        app.directive('enterPress', function () {
+            return function (scope, element, attrs) {
+                element.bind("keydown keypress", function (event) {
+                    //console.log(event.which);
+                    if(event.which === 13) {
+                        scope.$apply(function (){
+                            scope.$eval(attrs.enterPress);
+                        });
+                        event.preventDefault();
+                    }
+                });
+            };
+        });
+        app.filter('range', function() {
+            return function(input, total) {
+                //total = parseInt(total);
+                try{
+                    //console.log(total)
+                    var divs = total.split(",");
+
+                    for(var i =0 ; i< divs.length; i++){
+                        var r = divs[i].split("_");
+                        var start = parseInt(r[0]);
+                        var end = parseInt(r[1]);
+                        for (var j=start; j<end; j++) {
+                            if( j < 10){
+                                input.push("0"+j);
+                            }else{
+                                input.push(j);
+                            }
+                        }
+                    }
+                    return input;
+                }catch(err){}
+            };
+        });
+        app.filter('input_typ', function() {
+            return function(x) {
+                switch(x){
+                    case "0":
+                        return "Text";
+                    case "1":
+                        return "Number";
+                    case "2":
+                        return "Yes\/No";
+                    case "3":
+                        return "Date";
+                    case "4":
+                        return "Y\/N Text";
+                    default:
+                        return "Error";
+                }
+            };
+        });
+        app.filter('pro_occur', function() {
+            return function(x) {
+                switch(x){
+                    case "0":
+                        return "Daily";
+                    case "1":
+                        return "Weekly";
+                    case "2":
+                        return "Monthly";
+                    case "3":
+                        return "Per Shift";
+                    case "4":
+                        return "Time Define";
+                    default:
+                        return "Error";
+                }
+            };
+        });
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "preventDuplicates": false,
+            "positionClass": "toast-bottom-right",
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": 5000,
+            "extendedTimeOut": 0,
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut",
+            "tapToDismiss": false
+        };
+        function decbin(dec,length){
+            var out = "";
+            while(length--)
+                out += (dec >> length ) & 1;
+            return out;
+        }
+        function start_spinner(){
+            var spin_div = document.getElementById("spinner");
+            spinner1 = new Spinner().spin();
+            spin_div.appendChild(spinner1.el);
+        }
+        function show_success_msg(msg){
+            toastr.options.positionClass = "toast-bottom-right";
+            toastr.options.progressBar = true;
+            toastr.options.timeOut = 3000;
+            toastr.success(msg);
+        }
+        function show_err_msg(msg){
+            toastr.options.positionClass = "toast-bottom-right";
+            toastr.options.timeOut = 0;
+            toastr.error(msg);
+        }
+        function show_err_msg_short(msg){
+            toastr.options.positionClass = "toast-bottom-right";
+            toastr.options.progressBar = true;
+            toastr.options.timeOut = 3000;
+            toastr.error(msg);
+        }
+        function stop_spinner(){
+
+            spinner1.stop();
+        }
+        function getURLParameter(name) {
+
+            return decodeURIComponent((new RegExp('[#?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1])||null;
+        }
+        app.filter('propsFilter', function() {
+            return function(items, props) {
+                var out = [];
+                if (angular.isArray(items)) {
+                    var keys = Object.keys(props);
+                    items.forEach(function(item) {
+                        var itemMatches = false;
+                        for (var i = 0; i < keys.length; i++) {
+                            var prop = keys[i];
+                            var text = props[prop].toLowerCase();
+                            if (item[prop].toString().toLowerCase().indexOf(text) !== -1) {
+                                itemMatches = true;
+                                break;
+                            }
+                        }
+                        if (itemMatches) {
+                            out.push(item);
+                        }
+                    });
+                } else {
+                    out = items;
+                }
+                return out;
+            };
+        });
+    </script>
+</head>
+
+<body style="width: 100%; height:100%; background-color: #ddd;"  ng-controller="myCtrl"  id = "main_container" ng-cloak>
+
+<nav class="navbar navbar-dark animated fadeIn" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+    <a class="navbar-brand navbar-brand-right" href="../"><img src="public/img/logo_autoheinen.gif"></a>
+    <a class="navbar-brand" href=".">
+        TPM Manager
+    </a>
+    <ul class="nav navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="../"><span class="fa fa-home fa-lg" ></span></a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href=".">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <!--<li class="nav-item ">
+            <a class="nav-link" href="tpm_input.html?m_nr=03360">Massnahme</a>
+        </li>-->
+        <li class="nav-item ">
+            <a class="nav-link" href="tpm_full_history.html">Historie <span class="sr-only">(current)</span></a>
+        </li>
+        <li  id="nav_lbl_user" class="nav-item " style="position: absolute; right: 320px;  display: none;">
+            <a class="btn nav-link" href="">Welcome {{logged_user}}</a>
+        </li>
+    </ul>
+</nav>
+
+<!-- THIS IS THE MAIN BODY -->
+<div class="container animated fadeInLeft" style="width:98%;">
+
+    <div class="row">
+        <!-- THIS IS THE RIGHT PART BODY DEP LIST-->
+        <div class="col-md-12" style="padding-right:0px;">
+            <div class="card" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+
+                <div class="card-header clearfix">
+                    <h4 class="align-middle pull-left">TPM Massnahme</h4>
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" ng-model="search_text.text_filter" placeholder="Search for...">
+                            <span class="input-group-btn">
+									<div class="input-group-addon" ><i class="fa fa-search"></i>&nbsp;Suche</div>
+							  	</span>
+                        </div>
+                    </div>
+                    <button  type="button" class="btn pull-right" ng-click="open_pro_ins_modal()"> <i class="fa fa-plus"></i> Add</button>
+                </div>
+                <!-- PROCESS LIST ITEM -->
+                <div class="card-block" style="height:78vh; overflow:auto;">
+                    <table class="table table-bordered">
+                        <th></th>
+                        <th>Massnahme</th>
+                        <th>Zustandig</th>
+                        <th>Input Typ</th>
+                        <th>Wie oft</th>
+                        <th>Zeitpunkt</th>
+                        <th class="text-center m-table" ng-repeat="masch in masch_list" style="padding: .55rem;">{{masch.name}}</th>
+
+                        <tr ng-repeat="process in search_for()| filter:search_text">
+                            <td><button type="button" class="btn btn-success pull-right" ng-click="edit_task(process)"><i class="fa fa-lg fa-pencil-square-o" aria-hidden="true"></i></button></td>
+                            <td>{{process.name}}</td>
+                            <td ng-class="get_user_color(process.responsible)">{{process.responsible}}</td>
+                            <td>{{process.input_type | input_typ}}</td>
+                            <td>{{process.task_occur|pro_occur}}</td>
+                            <td>{{process.task_occur_time}}</td>
+                            <td class="text-center m-table" ng-repeat="masch in masch_list" ng-click="set_masch_status(process.uid,$parent.$index,masch.pos)"><i ng-class="get_masch_status(process.masch_mask, masch.pos)"></i></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer">
+
+                    <button  type="button" class="btn btn-success pull-right" ng-click="save_masch_selection()"> <i class="fa fa-floppy-o"></i> Save Changes</button>
+                </div>
+                <!-- FINISH PROCESS LIST ITEM -->
+            </div>
+        </div>
+        <!-- FINISH RIGHT PART BODY DEP LIST-->
+
+    </div>
+</div>
+<!-- FINISH THE MAIN BODY -->
+
+<!-- EXTRA COMPONENTS LIKE MODALS -->
+
+<!-- MODAL TO INSERT NEW PROCESS IN DEPARTMENT -->
+<div class="modal fade align-middle" id="mdl_new_prc">
+    <div class="modal-dialog modal-lg" role="document" style="width: 60%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Eingabe Neu Prozess</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div ng-class="ins_data.sel_occur_type == null?'col-md-12':'col-md-7'">
+                        <form>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Prozess Name</label>
+                                <textarea class="form-control" ng-model="ins_data.pro_name"></textarea>
+                            </div>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Aufgaben für </label>
+                                <select class="form-control" ng-model="ins_data.sel_user_type">
+                                    <option>Fluidmanager</option>
+                                    <option>Maschinenbediener</option>
+                                    <option>Einrichter</option>
+                                    <option>Instandhaltung</option>
+                                    <option>Instandhalter el.</option>
+                                    <option>Schichtführer</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Input Type </label>
+                                <select class="form-control"  ng-model="ins_data.sel_input_type">
+                                    <option value="0">Text</option>
+                                    <option value="1">Number</option>
+                                    <option value="2">Yes/ No</option>
+                                    <option value="3">Date</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Occurnce</label>
+                                <select class="form-control"  ng-model="ins_data.sel_occur_type">
+                                    <option value="0">Daily</option>
+                                    <option value="1">Weekly</option>
+                                    <option value="2">Monthly</option>
+                                    <option value="3">Per Shift</option>
+                                    <option value="4">Time Define</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="animated col-md-5 fadeInRight" ng-show="ins_data.sel_occur_type != null">
+
+                        <form ng-show="ins_data.sel_occur_type == 0">
+                            <h4>Select Daily Occurence</h4>
+                            <hr>
+                            <div class="form-group row" id="teile_select"  >
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Hour </label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" ng-model="occur.daily.hour">
+                                        <option ng-value="n" ng-repeat="n in []| range:'0_24'">{{n}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!--<div class="form-group row" id="teile_select"  >
+                              <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Min </label>
+                              <div class="col-sm-8">
+                                  <select class="form-control"  ng-model="occur.daily.min">
+                                        <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                  </select>
+                              </div>
+                            </div>-->
+                        </form>
+
+                        <form ng-show="ins_data.sel_occur_type == 1">
+                            <h4>Select Weeky Occurence</h4>
+                            <hr>
+                            <div class="form-group row" id="teile_select"  >
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Day</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" ng-model="occur.weekly.day">
+                                        <option value="monday">Montag</option>
+                                        <option value="tuesday">Dienstag</option>
+                                        <option value="wednesday">Mittwoch</option>
+                                        <option value="thursday">Donnerstag</option>
+                                        <option value="friday">Freitag</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Hour</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.weekly.hour">
+                                        <option ng-value="n" ng-repeat="n in []| range:'0_24'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.weekly.min">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+                        </form>
+
+                        <form ng-show="ins_data.sel_occur_type == 2">
+                            <h4>Select Monthly Occurence</h4>
+                            <hr>
+
+                            <div class="form-group row" id="teile_select">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Week </label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" ng-model="occur.monthly.week">
+                                        <option value="1">Week 1 </option>
+                                        <option value="2">Week 2 </option>
+                                        <option value="3">Week 3 </option>
+                                        <option value="4">Week 4 </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row" id="teile_select">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Day</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control"  ng-model="occur.monthly.day">
+                                        <option value="monday">Montag</option>
+                                        <option value="tuesday">Dienstag</option>
+                                        <option value="wednesday">Mittwoch</option>
+                                        <option value="thursday">Donnerstag</option>
+                                        <option value="friday">Freitag</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Time</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.monthly.hour">
+                                        <option ng-value="n" ng-repeat="n in []| range:'0_24'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.monthly.min">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+                        </form>
+
+                        <form ng-show="ins_data.sel_occur_type == 3">
+                            <h4>Select Shiftly Occurence</h4>
+                            <hr>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Früh</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.shift.hour_1">
+                                        <option ng-value="n" ng-repeat="n in []| range:'6_14'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control" ng-model="occur.shift.min_1">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Spät</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.shift.hour_2">
+                                        <option ng-value="n" ng-repeat="n in []| range:'14_22'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.shift.min_2">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Nacht</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.shift.hour_3">
+                                        <option ng-value="n" ng-repeat="n in []| range:'22_24,0_6'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.shift.min_3">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+                        </form>
+
+                        <form ng-show="ins_data.sel_occur_type == 4">
+                            <h4>Select Shiftly Occurence</h4>
+                            <hr>
+                            <table class="table table-bordered">
+                                <th style="text-align: center; border-color: black">Shift</th>
+                                <th style="text-align: center;">1</th>
+                                <th style="text-align: center;">2</th>
+                                <tbody>
+                                <tr>
+                                    <td>Früh</td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control"  ng-model="occur.time_define.hour_1_1">
+                                                <option ng-value="n" ng-repeat="n in []| range:'6_14'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control" ng-model="occur.time_define.hour_1_2">
+                                                <option ng-value="n" ng-repeat="n in []| range:'6_14'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Spät</td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control"  ng-model="occur.time_define.hour_2_1">
+                                                <option ng-value="n" ng-repeat="n in []| range:'14_22'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control" ng-model="occur.time_define.hour_2_2">
+                                                <option ng-value="n" ng-repeat="n in []| range:'14_22'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Nacht</td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control"  ng-model="occur.time_define.hour_3_1">
+                                                <option ng-value="n" ng-repeat="n in []| range:'22_24,0_6'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control" ng-model="occur.time_define.hour_3_2">
+                                                <option ng-value="n" ng-repeat="n in []| range:'22_24,0_6'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+
+                            </table>
+
+                            <!--<div class="card clearfix" style="border: 0px solid black;">
+                              <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Time</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control" ng-model="occur.list.hour">
+                                          <option ng-value="n" ng-repeat="n in []| range:24">{{n}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4">
+                                    <select class="form-control" ng-model="occur.list.min">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>
+                              </div>
+
+                              <button type="button" class="btn btn-primary pull-right" ng-click="add_time_in_list()">Add</button>
+                              </div>
+                              <hr>
+                              <table class="table table-bordered" style="text-align: center">
+                                  <th>Index</th>
+                                  <th>Time(at)</th>
+                                  <th></th>
+                                  <tr ng-repeat="time in time_list_ins">
+                                      <td>{{$index+1}}</td>
+                                      <td>{{time}}</td>
+                                      <td> <button class="btn" ng-click="remove_time_list($index)"> <i class="fa fa-trash"></i> </button></td>
+                                  </tr>
+                              </table>-->
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary pull-left" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" ng-click="insert_new_process()">
+                    <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                    &nbsp;Einfügen
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<!-- FINISH MODAL NEW PROCESS -->
+
+<!-- MODAL TO INSERT NEW PROCESS IN DEPARTMENT -->
+<div class="modal fade align-middle" id="mdl_edit_prc">
+    <div class="modal-dialog modal-lg" role="document" style="width: 60%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Edit Prozess</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div ng-class="edit_data.sel_occur_type == null?'col-md-12':'col-md-7'">
+                        <form>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Prozess Name</label>
+                                <textarea class="form-control" ng-model="edit_data.pro_name"></textarea>
+                            </div>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Aufgaben für </label>
+                                <select class="form-control" ng-model="edit_data.sel_user_type">
+                                    <option>Fluidmanager</option>
+                                    <option>Maschinenbediener</option>
+                                    <option>Einrichter</option>
+                                    <option>Instandhaltung</option>
+                                    <option>Instandhalter el.</option>
+                                    <option>Schichtführer</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Input Type </label>
+                                <select class="form-control"  ng-model="edit_data.sel_input_type">
+                                    <option value="0">Text</option>
+                                    <option value="1">Number</option>
+                                    <option value="2">Yes/ No</option>
+                                    <option value="3">Date</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="teile_select"  >
+                                <label for="exampleInputEmail1">Occurnce</label>
+                                <select class="form-control"  ng-model="edit_data.sel_occur_type" disabled>
+                                    <option value="0">Daily</option>
+                                    <option value="1">Weekly</option>
+                                    <option value="2">Monthly</option>
+                                    <option value="3">Per Shift</option>
+                                    <option value="4">Time Define</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="animated col-md-5 fadeInRight" ng-show="edit_data.sel_occur_type != null">
+
+                        <form ng-show="edit_data.sel_occur_type == 0">
+                            <h4>Select Daily Occurence</h4>
+                            <hr>
+                            <div class="form-group row" id="teile_select"  >
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Hour </label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" ng-model="occur_edit.daily.hour">
+                                        <option ng-value="n" ng-repeat="n in []| range:'0_24'">{{n}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!--<div class="form-group row" id="teile_select"  >
+                              <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Min </label>
+                              <div class="col-sm-8">
+                                  <select class="form-control"  ng-model="occur.daily.min">
+                                        <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                  </select>
+                              </div>
+                            </div>-->
+                        </form>
+
+                        <form ng-show="edit_data.sel_occur_type == 1">
+                            <h4>Select Weeky Occurence</h4>
+                            <hr>
+                            <div class="form-group row" id="teile_select"  >
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Day</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" ng-model="occur_edit.weekly.day">
+                                        <option value="monday">Montag</option>
+                                        <option value="tuesday">Dienstag</option>
+                                        <option value="wednesday">Mittwoch</option>
+                                        <option value="thursday">Donnerstag</option>
+                                        <option value="friday">Freitag</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Hour</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur_edit.weekly.hour">
+                                        <option ng-value="n" ng-repeat="n in []| range:'0_24'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.weekly.min">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+                        </form>
+
+                        <form ng-show="edit_data.sel_occur_type == 2">
+                            <h4>Select Monthly Occurence</h4>
+                            <hr>
+
+                            <div class="form-group row" id="teile_select">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Week </label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" ng-model="occur_edit.monthly.week">
+                                        <option value="1">Week 1 </option>
+                                        <option value="2">Week 2 </option>
+                                        <option value="3">Week 3 </option>
+                                        <option value="4">Week 4 </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row" id="teile_select">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Day</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control"  ng-model="occur_edit.monthly.day">
+                                        <option value="monday">Montag</option>
+                                        <option value="tuesday">Dienstag</option>
+                                        <option value="wednesday">Mittwoch</option>
+                                        <option value="thursday">Donnerstag</option>
+                                        <option value="friday">Freitag</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Select Time</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur_edit.monthly.hour">
+                                        <option ng-value="n" ng-repeat="n in []| range:'0_24'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.monthly.min">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+                        </form>
+
+                        <form ng-show="edit_data.sel_occur_type == 3">
+                            <h4>Select Shiftly Occurence</h4>
+                            <hr>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Früh</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur_edit.shift.hour_1">
+                                        <option ng-value="n" ng-repeat="n in []| range:'6_14'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control" ng-model="occur.shift.min_1">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Spät</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur_edit.shift.hour_2">
+                                        <option ng-value="n" ng-repeat="n in []| range:'14_22'">{{n}}</option>
+                                    </select>
+                                </div>
+                                <!--<div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur.shift.min_2">
+                                          <option ng-value="n" ng-repeat="n in []| range:60">{{n}}</option>
+                                    </select>
+                                </div>-->
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="exampleInputEmail1">Nacht</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control"  ng-model="occur_edit.shift.hour_3">
+                                        <option ng-value="n" ng-repeat="n in []| range:'22_24,0_6'">{{n}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+
+                        <form ng-show="edit_data.sel_occur_type == 4">
+                            <h4>Select Shiftly Occurence</h4>
+                            <hr>
+                            <table class="table table-bordered">
+                                <th style="text-align: center; border-color: black">Shift</th>
+                                <th style="text-align: center;">1</th>
+                                <th style="text-align: center;">2</th>
+                                <tbody>
+                                <tr>
+                                    <td>Früh</td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control"  ng-model="occur_edit.time_define.hour_1_1">
+                                                <option ng-value="n" ng-repeat="n in []| range:'6_14'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control" ng-model="occur_edit.time_define.hour_1_2">
+                                                <option ng-value="n" ng-repeat="n in []| range:'6_14'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Spät</td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control"  ng-model="occur_edit.time_define.hour_2_1">
+                                                <option ng-value="n" ng-repeat="n in []| range:'14_22'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control" ng-model="occur_edit.time_define.hour_2_2">
+                                                <option ng-value="n" ng-repeat="n in []| range:'14_22'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Nacht</td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control"  ng-model="occur_edit.time_define.hour_3_1">
+                                                <option ng-value="n" ng-repeat="n in []| range:'22_24,0_6'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <select class="form-control" ng-model="occur_edit.time_define.hour_3_2">
+                                                <option ng-value="n" ng-repeat="n in []| range:'22_24,0_6'">{{n}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+
+                            </table>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary pull-left" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" ng-click="update_process()">
+                    <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                    &nbsp;Save
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<!-- FINISH MODAL NEW PROCESS -->
+
+<!-- SPINNER -->
+<div id ="spinner" style="position:fixed;top:50%;left:50%;z-index:999"></div>
+</body>
+</html>
