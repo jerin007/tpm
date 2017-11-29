@@ -5,7 +5,7 @@
   use \ForceUTF8\Encoding;  // It's namespaced now.
   
 
-  $query = "SELECT * from sd_masch_list";
+  $query = "SELECT * from t_maschine";
 
   $result = mysqli_query($con,$query);
   

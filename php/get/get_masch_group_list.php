@@ -16,8 +16,6 @@
   $result->free();
   echo json_encode($result_list);
 
-  var_dump($result_list); /*added by faysal*/
-  
   mysqli_close($con);
 
  ?>
