@@ -1,4 +1,4 @@
-
+<!-- git push testing -->
 <?php
   include("../connection.php");
   require_once("../lib/Encoding.php");
@@ -11,8 +11,13 @@
   while($r = mysqli_fetch_assoc($result)) {
     $result_list[] = Encoding::toUTF8($r);
   }
+
+
   $result->free();
   echo json_encode($result_list);
+
+  var_dump($result_list); /*added by faysal*/
+  
   mysqli_close($con);
 
  ?>
