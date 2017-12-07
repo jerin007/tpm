@@ -1,4 +1,3 @@
-<!-- git push testing -->
 <?php
   include("../connection.php");
   require_once("../lib/Encoding.php");
@@ -12,10 +11,9 @@
     $result_list[] = Encoding::toUTF8($r);
   }
 
-
   $result->free();
+  //var_dump(($result_list));die();
+
   echo json_encode($result_list);
-
   mysqli_close($con);
-
  ?>

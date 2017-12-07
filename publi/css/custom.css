@@ -1,0 +1,104 @@
+
+
+
+/* Let's get this party started */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: rgba(80,80,80,.8);
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+    background: rgba(0, 25, 56,1);
+    -webkit-box-shadow: inset 0 0 6px rgba(40,40,40,0.5);
+}
+::-webkit-scrollbar-thumb:window-inactive {
+    background: rgba(0, 25, 56,1);
+}
+
+.btn_fehlar{padding: 20px;margin-bottom: 15px;white-space: normal;}
+.btn_fehlar .first{font-weight: 700;}
+.btn_selected{background-color: #297ACC!important;color: white!important;}
+.badge {
+    padding: 5px;
+    padding-right: 8px;
+    padding-left: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #ffffff;
+    background-color: #999999;
+    -webkit-border-radius: 19px;
+    -moz-border-radius: 19px;
+    border-radius: 19px;
+
+}
+.badge:hover {
+    color: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
+}
+.badge-error {
+    background-color: #b94a48!important;
+}
+.badge-error:hover {
+    background-color: #953b39!important;
+}
+.badge-warning {
+    background-color: #f89406!important;
+}
+.badge-warning:hover {
+    background-color: #c67605!important;
+}
+.badge-success {
+    background-color: #468847!important;
+}
+.badge-success:hover {
+    background-color: #356635!important;
+}
+.badge-info {
+    background-color: #3a87ad!important;
+}
+.badge-info:hover {
+    background-color: #2d6987!important;
+}
+.badge-inverse {
+    background-color: #333333!important;
+}
+.badge-inverse:hover {
+    background-color: #1a1a1a!important;
+}
+.div_per_info{
+    border: 1px solid #636363;
+    padding: 15px;
+    margin-bottom: 10px!important;
+    border-radius: 5px;
+}
+.btn_Schaltgabel{width: 92%!important;  margin: 0 auto;white-space: normal;font-size:1.4em; padding-top:5px;padding-bottom:5px;margin-bottom: 5px}
+.btn_nester{margin: 0 auto;white-space: normal;font-size:1.4em; padding-top:5px;padding-bottom:5px;margin-bottom: 5px}
+.btn_Schaltgabel .first{font-weight: 500;}
+.btn_option{width: 92%!important;white-space: normal;font-size:1.5em; padding-top:5px;padding-bottom:5px;margin-bottom: 5px}
+.btn_Gussfehler{margin: 0 auto;white-space: normal;font-size:1.2em; padding-top:5px;padding-bottom:5px;margin-bottom: 5px}
+#btn_Teilwechsel{
+    font-size:1.8em; padding-top:5px;padding-bottom:5px;margin-bottom: 5px;
+    white-space: normal;
+    margin-top: 5%;
+}
+.ausschussgrud_btn{
+    width: 25%;
+}
+.popover {
+    min-width: 30em !important;
+}
+.popover button{font-size:1.5em; padding-top:5px;padding-bottom:5px;margin-bottom: 5px;}
+.center_content{display: flex;align-items: center;justify-content: center}
+
+#tblPerson tr,#tblPerson td{border: none!important;}

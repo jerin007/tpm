@@ -1,0 +1,50 @@
+.bg-inverse-ah {
+    color: #fff!important;
+    background-color: #001938!important;
+}
+
+.navbar {
+    border-radius: 0;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    font-size: 18px;
+}
+
+.navbar-dark .navbar-brand {
+    font-size: 20px;
+}
+
+.nav-tabs .nav-item+.nav-item .nav-link {
+    font-size: 16px;
+    color:#ddd;
+}
+
+.nav-tabs .nav-link {
+    display: block;
+    padding: .5em 1em;
+    border: 1px solid transparent;
+    border-top-right-radius: .25rem;
+    border-top-left-radius: .25rem;
+    color:#ddd;
+}
+
+.nav-tabs .nav-item {
+    float: left;
+    margin-bottom: -1px;
+    font-size: 16px;
+    color:#ddd;
+}
+
+.nav-link.active, .nav-tabs .nav-link.active:focus, .nav-tabs .nav-link.active:hover {
+    color: #55595c;
+    background-color: #ccc;
+    font-size: 16px;
+    border-color: #ddd #ddd transparent;
+}
+
+.nav-tabs .nav-link.disabled, .nav-tabs .nav-link.disabled:focus, .nav-tabs .nav-link.disabled:hover {
+    color: white;
+    background-color: transparent;
+    border-color: transparent;
+}

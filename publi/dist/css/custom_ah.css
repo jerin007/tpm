@@ -1,0 +1,72 @@
+img {
+  /* border-radius: 50%; */
+  -webkit-transition: -webkit-transform .8s ease-in-out;
+          transition:         transform .8s ease-in-out;
+          
+}
+.info-box {
+    
+    min-height: 95px;
+    
+}
+.info-box:hover{
+	background: #d2d8e0;
+
+}
+.info-box:hover img{
+  -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);  
+}
+.skin-blue .sidebar-menu>li.active>a {
+    
+    background-color: #3c4a50;
+}
+.info-box-number {
+  display: block;
+  font-weight: bold;
+  font-size: 22px;
+  word-break: break-all;
+}
+.progress-description,
+.info-box-text {
+  display: block;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: none;
+}
+
+.dashboardContent{
+
+	color: #000;
+}
+.bg-black {
+    background-color: #333 !important;
+}
+
+.skin-blue .main-header .navbar {
+    background-color: #001938;
+}
+
+.skin-blue .main-header .logo {
+    background-color: #001938;
+}
+
+.info-box-icon {
+    
+    height: 95px;
+    width: 95px;
+    
+}
+
+@media only screen and (min-width: 1024px) and (max-width: 768px)
+{
+	.info-box-number {
+   
+    font-size: 17px;
+    
+}
+
+	}
+

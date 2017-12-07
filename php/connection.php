@@ -1,6 +1,6 @@
 <?php
 
-  $con=mysqli_connect("localhost","root","","tpm_db");
+  $con=mysqli_connect("localhost","root","","tpmdb_new");
 
   if (mysqli_connect_errno())
   {
